@@ -6,6 +6,8 @@ public class GameManager : MonoBehaviour
 {
     // VARIABLES
 
+    [SerializeField] private GameObject gameBoard = null;
+
     public string playerName { get; private set; }
     public int totalTries { get; private set; }
     public float timeElapsedInSeconds;
@@ -45,7 +47,7 @@ public class GameManager : MonoBehaviour
 
     private void Update() {
 
-        if (playerWonTrigger) return;
+        if (playerWonTrigger || !gameBoard.activeSelf) return;
 
         // neededUniqueCards is the amount of unique cards there are on the board.
         // If the pairs found equals that number, the player has won
