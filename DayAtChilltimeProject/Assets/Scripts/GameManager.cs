@@ -169,10 +169,7 @@ public class GameManager : MonoBehaviour
     }
 
     public void PlayAgainButton() {
-        PlayerData playerData = new PlayerData();
-        playerData.CreateNewData(playerName);
-        SaveManager.SavePlayerData(playerData);
-
+        PlayerData playerData = SaveManager.GetPlayerData(playerName);
         SaveManager.currentData = playerData;
 
         FindObjectOfType<MenuManager>().GoToScene("GameScene");
