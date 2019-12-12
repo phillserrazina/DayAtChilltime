@@ -16,6 +16,8 @@ public class CardInitializer : MonoBehaviour
     public int AmountOfPairs { get { return amountOfPairs; } }
 
     public Card[] allCards { get; private set; }
+    private List<int> usedCardIndexes = new List<int>();
+    public List<int> UsedCardIndexes { get { return usedCardIndexes; } }
 
     // METHODS
 
@@ -23,6 +25,17 @@ public class CardInitializer : MonoBehaviour
         allCards = FindObjectsOfType<Card>();
         usedCards = GetUsedCards();
 
+        if (SaveManager.currentData.cardSprites == null)
+            InitNewCards();
+        else
+            LoadCards();
+
+        foreach (var card in allCards) {
+            RegisterCardSpriteIndex(card.cardSprite);
+        }
+    }
+
+    private void InitNewCards() {
         // Convert allCards array to List for easier use
         List<Card> remainingCardsToAssign = allCards.ToList();
 
@@ -33,6 +46,13 @@ public class CardInitializer : MonoBehaviour
                 remainingCardsToAssign[cardPos].cardSprite = usedCards[i];
                 remainingCardsToAssign.Remove(remainingCardsToAssign[cardPos]);
             }
+        }
+    }
+    
+    private void LoadCards() {
+        for (int i = 0; i < allCards.Length; i++) {
+            allCards[i].cardSprite = allCardSprites[SaveManager.currentData.cardSprites[i]];
+            allCards[i].SetState(SaveManager.currentData.cardStates[i]);
         }
     }
 
@@ -49,5 +69,12 @@ public class CardInitializer : MonoBehaviour
         }
 
         return answer;
+    }
+
+    private void RegisterCardSpriteIndex(Sprite sprite) {
+        for (int i = 0; i < allCardSprites.Length; i++) {
+            if (allCardSprites[i] == sprite)
+                usedCardIndexes.Add(i);
+        }
     }
 }

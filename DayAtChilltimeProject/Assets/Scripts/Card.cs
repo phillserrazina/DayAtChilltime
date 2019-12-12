@@ -46,4 +46,46 @@ public class Card : MonoBehaviour
         currentState = CardStates.Found;
         glowFX.SetActive(false);
     }
+
+    /// <summary>
+    /// Utility function used to load the state of the card.
+    /// <br>Indexes: 0 = Unchecked; 1 = Checked; 2 = Found.</br>
+    /// </summary>
+    /// <param name="state"></param>
+    public void SetState(int state) {
+        switch (state) {
+            case 0:
+                currentState = CardStates.Unchecked;
+                break;
+            
+            case 1:
+                currentState = CardStates.Checked;
+                image.sprite = cardSprite;
+                gameManager.AddToGuess(this);
+                glowFX.SetActive(true);
+                break;
+            
+            case 2:
+                currentState = CardStates.Found;
+                image.sprite = cardSprite;
+                gameManager.AddToCorrectCardZone(cardSprite);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Utility function used to save the state of the card.
+    /// <br>Indexes: 0 = Unchecked; 1 = Checked; 2 = Found.</br>
+    /// </summary>
+    /// <returns></returns>
+    public int GetState() {
+        switch (currentState) {
+            case CardStates.Unchecked: return 0;
+            case CardStates.Checked: return 1;
+            case CardStates.Found: return 2;
+            default:
+                Debug.Log("Card::GetState() --- Invalid state! Returned 0 (Unchecked) by default.");
+                return 0;
+        }
+    }
 }

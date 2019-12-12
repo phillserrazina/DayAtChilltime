@@ -30,8 +30,13 @@ public class GameManager : MonoBehaviour
     // EXECUTION FUNCTIONS
 
     private void Start() {
-        playerName = "Player";
-        totalTries = 0;
+        SaveManager saveManager = FindObjectOfType<SaveManager>();
+
+        playerName = saveManager == null ? "Player Name" : SaveManager.currentData.playerName;
+        totalTries = saveManager == null ? 0 : SaveManager.currentData.playerTries;
+        timeElapsedInSeconds = saveManager == null ? 0f : SaveManager.currentData.playerTime;
+
+        allCorrectCardObjects = FindObjectsOfType<CorrectCardUI>();
 
         cardInitializer = FindObjectOfType<CardInitializer>();
         cardInitializer.InitializeCards();
@@ -39,8 +44,6 @@ public class GameManager : MonoBehaviour
 
         uiManager = FindObjectOfType<UIManager>();
         uiManager.Initialize(this);
-
-        allCorrectCardObjects = FindObjectsOfType<CorrectCardUI>();
 
         waitingForReset = false; 
     }
@@ -53,9 +56,13 @@ public class GameManager : MonoBehaviour
         // If the pairs found equals that number, the player has won
         playerWon = (numberOfPairsFound == cardInitializer.neededUniqueCards);
 
+        if (Input.GetKeyDown(KeyCode.C)) playerWon = true;
+
         if (playerWon) {
             finalScore = (totalTries * 5) + timeElapsedInSeconds;
             uiManager.TriggerWinnerScreen(finalScore);
+            SaveManager.DeletePlayerData(playerName);
+            
             playerWonTrigger = true;
             return;
         }
@@ -73,9 +80,7 @@ public class GameManager : MonoBehaviour
                     card.Find();
                 }
 
-                int accessIndex = allCorrectCardObjects.Length-numberOfPairsFound-1;
-                allCorrectCardObjects[accessIndex].image.sprite = currentGuess[0].cardSprite;
-                numberOfPairsFound++;
+                AddToCorrectCardZone(currentGuess[0].cardSprite);
             }
             else {
                 StartCoroutine(ResetCards());
@@ -84,6 +89,17 @@ public class GameManager : MonoBehaviour
             currentGuess.Clear();
             totalTries++;
         }
+    }
+
+    public void AddToCorrectCardZone(Sprite sprite) {
+        foreach (var s in allCorrectCardObjects) {
+            if (s.image.sprite == sprite)
+                return;
+        }
+
+        int accessIndex = allCorrectCardObjects.Length-numberOfPairsFound-1;
+        allCorrectCardObjects[accessIndex].image.sprite = sprite;
+        numberOfPairsFound++;
     }
 
     private bool CheckIfGuessIsCorrect() {
@@ -97,6 +113,20 @@ public class GameManager : MonoBehaviour
         }
 
         return goodGuess;
+    }
+
+    private void AddScore(float score) {
+        LeaderboardScore lbScore = new LeaderboardScore(playerName, score, timeElapsedInSeconds);
+        LeaderboardData lbData = SaveManager.GetLeaderboardData();
+        
+        lbData.allScores.Add(lbScore);
+        lbData.allScores.Sort( 
+            delegate(LeaderboardScore x, LeaderboardScore y) { 
+                return x.playerScore.CompareTo(y.playerScore); 
+            }
+        );
+
+        SaveManager.SaveLeaderboardData(lbData);
     }
 
     private IEnumerator ResetCards() {
@@ -113,5 +143,38 @@ public class GameManager : MonoBehaviour
 
     public void AddToGuess(Card c) {
         currentGuess.Add(c);
+    }
+
+    private int[] GetCardStates() {
+        var answer = new List<int>();
+
+        foreach (var card in cardInitializer.allCards) {
+            answer.Add(card.GetState());
+        }
+
+        return answer.ToArray();
+    }
+
+    public void SaveGame() {
+        PlayerData playerData = new PlayerData();
+
+        playerData.playerName = playerName;
+        playerData.playerTries = totalTries;
+        playerData.playerTime = timeElapsedInSeconds;
+
+        playerData.cardSprites = cardInitializer.UsedCardIndexes.ToArray();
+        playerData.cardStates = GetCardStates();
+
+        SaveManager.SavePlayerData(playerData);
+    }
+
+    public void PlayAgainButton() {
+        PlayerData playerData = new PlayerData();
+        playerData.CreateNewData(playerName);
+        SaveManager.SavePlayerData(playerData);
+
+        SaveManager.currentData = playerData;
+
+        FindObjectOfType<MenuManager>().GoToScene("GameScene");
     }
 }
