@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 public class LinePrefabUI : MonoBehaviour
 {
-    [SerializeField] private Text placementText;
-    [SerializeField] private Text nameText;
-    [SerializeField] private Text scoreText;
-    [SerializeField] private Text timeText;
+    public Text placementText;
+    public Text nameText;
+    public Text scoreText;
+    public Text timeText;
 }

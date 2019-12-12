@@ -62,7 +62,7 @@ public class GameManager : MonoBehaviour
             finalScore = (totalTries * 5) + timeElapsedInSeconds;
             uiManager.TriggerWinnerScreen(finalScore);
             SaveManager.DeletePlayerData(playerName);
-            
+            AddScore(finalScore);
             playerWonTrigger = true;
             return;
         }
@@ -118,7 +118,7 @@ public class GameManager : MonoBehaviour
     private void AddScore(float score) {
         LeaderboardScore lbScore = new LeaderboardScore(playerName, score, timeElapsedInSeconds);
         LeaderboardData lbData = SaveManager.GetLeaderboardData();
-        
+
         lbData.allScores.Add(lbScore);
         lbData.allScores.Sort( 
             delegate(LeaderboardScore x, LeaderboardScore y) { 
